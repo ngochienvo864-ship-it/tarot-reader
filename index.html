@@ -3,44 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tarot Reader - Prototype</title>
+    <title>AI Tarot Reader - Stable Version</title>
     <style>
         body {
-            background-color: #0d0e15;
-            color: #e2e2e2;
+            background-color: #0d0e15; color: #e2e2e2;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
+            text-align: center; padding: 20px; margin: 0;
         }
         h1 { color: #bb86fc; font-weight: 300; letter-spacing: 2px; }
         .container { max-width: 600px; margin: 0 auto; }
+        .api-setup {
+            background: #1a1b26; padding: 15px; border-radius: 8px;
+            margin-bottom: 20px; border: 1px solid #444; font-size: 14px;
+        }
+        .api-setup input {
+            width: 80%; padding: 8px; border-radius: 4px; border: 1px solid #bb86fc;
+            background: #0d0e15; color: #fff; margin-top: 10px; text-align: center;
+        }
         textarea {
             width: 100%; height: 80px; background: #1a1b26; color: #fff;
             border: 1px solid #bb86fc; border-radius: 8px; padding: 10px;
             font-size: 16px; outline: none; margin-bottom: 20px; resize: none;
         }
         button {
-            background: linear-gradient(45deg, #6200ea, #bb86fc);
-            color: white; border: none; padding: 12px 24px; font-size: 16px;
+            background: linear-gradient(45deg, #6200ea, #bb86fc); color: white;
+            border: none; padding: 12px 24px; font-size: 16px;
             border-radius: 24px; cursor: pointer; transition: 0.3s; font-weight: bold;
         }
         button:hover { opacity: 0.8; box-shadow: 0 0 15px #bb86fc; }
         button:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
-        
-        .cards {
-            display: flex; justify-content: center; gap: 15px; margin: 30px 0;
-        }
+        .cards { display: flex; justify-content: center; gap: 15px; margin: 30px 0; }
         .card {
-            width: 100px; height: 160px; background: #232435;
-            border: 1px solid #444; border-radius: 10px;
+            width: 100px; height: 160px; background: #232435; border: 1px solid #444; border-radius: 10px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-size: 12px; color: #ffd700; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             transition: transform 0.5s; opacity: 0; transform: translateY(20px);
         }
         .card.show { opacity: 1; transform: translateY(0); }
         .card span { font-size: 30px; margin-bottom: 10px; }
-        
         #result {
             background: #1a1b26; padding: 20px; border-radius: 8px;
             border-left: 4px solid #bb86fc; text-align: left; line-height: 1.6;
@@ -53,24 +53,24 @@
 
     <div class="container">
         <h1>✨ TAROT AI READER ✨</h1>
+        
+        <!-- Khung nhập API Key trực tiếp trên web -->
+        <div class="api-setup" id="apiSetupBlock">
+            <strong>BƯỚC 1:</strong> Dán API Key của bạn vào đây để kết nối với vũ trụ<br>
+            <input type="password" id="userApiKey" placeholder="Nhập mã AQ.Ab... hoặc AIzaSy... vào đây">
+        </div>
+
         <p>Tập trung vào vấn đề của bạn và đặt câu hỏi...</p>
         
         <textarea id="question" placeholder="Ví dụ: Định hướng công việc sắp tới của tôi sẽ như thế nào?"></textarea>
         <button id="drawBtn" onclick="startTarotReading()">Bốc 3 Lá Bài</button>
         
-        <div class="cards" id="cardContainer">
-            <!-- Thẻ bài sẽ xuất hiện ở đây -->
-        </div>
-
+        <div class="cards" id="cardContainer"></div>
         <div class="loading" id="loading">Vũ trụ đang kết nối và giải mã các lá bài... Xin chờ một lát...</div>
         <div id="result"></div>
     </div>
 
     <script>
-        // Cập nhật API Key mới
-        const GEMINI_API_KEY = "AQ.Ab8RN6LfIkxBOuGfYfGwj2bd6PynQlR3pzQmPoKPnLKwBbcJgA";
-
-        // Danh sách rút gọn của 22 lá Ẩn chính (Major Arcana) để làm demo
         const tarotDeck = [
             { name: "The Fool", icon: "🃏" }, { name: "The Magician", icon: "🪄" },
             { name: "The High Priestess", icon: "🌙" }, { name: "The Empress", icon: "👑" },
@@ -86,13 +86,18 @@
         ];
 
         async function startTarotReading() {
+            const apiKeyInput = document.getElementById("userApiKey").value.trim();
             const question = document.getElementById("question").value.trim();
+            
+            if (!apiKeyInput) {
+                alert("Bạn phải dán API Key vào ô phía trên mới có thể kết nối AI!");
+                return;
+            }
             if (!question) {
                 alert("Vui lòng nhập câu hỏi của bạn trước khi bốc bài!");
                 return;
             }
 
-            // Giao diện loading
             const btn = document.getElementById("drawBtn");
             const loading = document.getElementById("loading");
             const resultDiv = document.getElementById("result");
@@ -103,11 +108,9 @@
             cardContainer.innerHTML = "";
             loading.style.display = "block";
 
-            // Bốc ngẫu nhiên 3 lá bài
             let shuffled = tarotDeck.sort(() => 0.5 - Math.random());
             let drawnCards = shuffled.slice(0, 3);
 
-            // Hiển thị bài ra màn hình với hiệu ứng
             drawnCards.forEach((card, index) => {
                 setTimeout(() => {
                     cardContainer.innerHTML += `
@@ -116,24 +119,27 @@
                             <strong>${card.name}</strong>
                         </div>
                     `;
-                }, index * 400); // Mỗi lá xuất hiện cách nhau 0.4s
+                }, index * 400); 
             });
 
-            // Gọi API của Google Gemini để luận giải bài
             const prompt = `Bạn là một Tarot Reader chuyên nghiệp, thấu cảm và sâu sắc. 
             Khách hàng hỏi: "${question}". 
             Họ bốc được 3 lá bài: 1. ${drawnCards[0].name}, 2. ${drawnCards[1].name}, 3. ${drawnCards[2].name}. 
             Hãy giải nghĩa ngắn gọn, logic tình huống của họ dựa trên 3 lá bài này và đưa ra lời khuyên. Viết bằng tiếng Việt, chia thành 3 phần: Hiện tại, Lời khuyên từ vũ trụ, Kết quả tiềm năng.`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyInput}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
 
+                if (response.status === 401 || response.status === 403) {
+                     throw new Error(`Mã API bị từ chối (Lỗi ${response.status}). Có thể bạn copy sai, copy dư khoảng trắng, hoặc mã chưa được kích hoạt. Hãy tạo một mã API mới hoàn toàn.`);
+                }
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`Lỗi kết nối mạng: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -143,21 +149,17 @@
                 }
 
                 const aiResponse = data.candidates[0].content.parts[0].text;
-
                 loading.style.display = "none";
                 resultDiv.style.display = "block";
-                // Chuyển markdown in đậm của AI thành thẻ HTML
                 resultDiv.innerHTML = aiResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
             } catch (error) {
                 loading.style.display = "none";
-                alert(`Có lỗi xảy ra khi kết nối với AI. Lỗi: ${error.message}. Hãy kiểm tra lại API Key.`);
+                alert(`LỖI: ${error.message}`);
                 console.error("Chi tiết lỗi:", error);
             } finally {
                 btn.disabled = false;
             }
         }
     </script>
-</body>
-</html>
 </body>
 </html>
