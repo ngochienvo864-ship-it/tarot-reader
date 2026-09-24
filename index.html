@@ -67,8 +67,7 @@
     </div>
 
     <script>
-        // BƯỚC QUAN TRỌNG: Hãy điền API Key của Google Gemini vào đây
-        // Lấy key miễn phí tại: https://aistudio.google.com/
+        // Cập nhật API Key mới
         const GEMINI_API_KEY = "AQ.Ab8RN6LfIkxBOuGfYfGwj2bd6PynQlR3pzQmPoKPnLKwBbcJgA";
 
         // Danh sách rút gọn của 22 lá Ẩn chính (Major Arcana) để làm demo
@@ -120,17 +119,6 @@
                 }, index * 400); // Mỗi lá xuất hiện cách nhau 0.4s
             });
 
-            // Nếu bạn chưa điền API Key, hệ thống sẽ trả về câu trả lời giả lập
-            if (GEMINI_API_KEY === "AQ.Ab8RN6LfIkxBOuGfYfGwj2bd6PynQlR3pzQmPoKPnLKwBbcJgA") {
-                setTimeout(() => {
-                    loading.style.display = "none";
-                    resultDiv.style.display = "block";
-                    resultDiv.innerHTML = `<strong>⚠️ Lưu ý:</strong> Bạn chưa điền Gemini API Key trong mã nguồn nên AI chưa thể hoạt động thực sự.<br><br><strong>Kết quả giả lập:</strong> Dựa trên câu hỏi "${question}" và 3 lá bài (${drawnCards.map(c=>c.name).join(', ')}), vũ trụ khuyên bạn hãy bình tĩnh đối mặt với thử thách. Sự kiên nhẫn sẽ mang lại thành quả.`;
-                    btn.disabled = false;
-                }, 2000);
-                return;
-            }
-
             // Gọi API của Google Gemini để luận giải bài
             const prompt = `Bạn là một Tarot Reader chuyên nghiệp, thấu cảm và sâu sắc. 
             Khách hàng hỏi: "${question}". 
@@ -144,20 +132,32 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
+                
+                if (data.error) {
+                     throw new Error(data.error.message);
+                }
+
                 const aiResponse = data.candidates[0].content.parts[0].text;
 
                 loading.style.display = "none";
                 resultDiv.style.display = "block";
                 // Chuyển markdown in đậm của AI thành thẻ HTML
-                resultDiv.innerHTML = aiResponse.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>'); 
+                resultDiv.innerHTML = aiResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
             } catch (error) {
                 loading.style.display = "none";
-                alert("Có lỗi xảy ra khi kết nối với AI. Hãy kiểm tra lại API Key.");
-                console.error(error);
+                alert(`Có lỗi xảy ra khi kết nối với AI. Lỗi: ${error.message}. Hãy kiểm tra lại API Key.`);
+                console.error("Chi tiết lỗi:", error);
+            } finally {
+                btn.disabled = false;
             }
-            btn.disabled = false;
         }
     </script>
+</body>
+</html>
 </body>
 </html>
